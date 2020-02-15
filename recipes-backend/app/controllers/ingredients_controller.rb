@@ -15,7 +15,6 @@ class IngredientsController < ApplicationController
 
   # POST /recipes
   def create
-    binding.pry
     recipe=Recipe.find_by(id: params[:recipe_id])
     @ingredient = recipe.ingredients.build(ingredient_params)
 
@@ -48,6 +47,6 @@ class IngredientsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def ingredient_params
-      params.require(:recipe).permit(:description, :recipe_id)
+      params.require(:ingredient).permit(:description, :recipe_id)
     end
 end

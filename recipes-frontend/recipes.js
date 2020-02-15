@@ -77,7 +77,9 @@ function displayRecipe(e){
     .then(resp => resp.json())
     .then(recipe => {
         let ingredients= recipe.ingredients.map(ingredient => {
-            return `<li>${ingredient.description}</li>`
+            return `<li>
+            ${ingredient.description}
+            </li>`
             }).join('')
         main.innerHTML += `
             <h2>${recipe.description}</h2> 
@@ -95,9 +97,7 @@ function displayRecipe(e){
                 <br>
                 <div id='ingredient-form'></div>
                 <br>
-                <br>
-                <br>
-
+                
                 <strong>Directions:</strong>
                 </br>
                 ${recipe.directions}
@@ -143,10 +143,13 @@ function addIngredient(id){
     .then(resp => resp.json())
     .then(ingredient => {
         document.querySelector('#main ul ul').innerHTML += `
-        <li>${ingredient.description}</li>
+        <li>
+        ${ingredient.description}
+        <button onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
+        </li>
         `
-        clearForm()
     })
+    clearForm()
 }
 
 function removeRecipe(id) {
@@ -162,7 +165,7 @@ function removeRecipe(id) {
 }
 
 function editRecipe(id){
-    clearForm
+    clearForm()
     fetch(BASE_URL+`/recipes/${id}`)
     .then(resp => resp.json())
     .then(recipe => {
@@ -183,7 +186,7 @@ function editRecipe(id){
 }
 
 function updateRecipe(id){
-    clearForm
+    clearForm()
     const recipe = {
         description: document.getElementById('description').value,
         time: document.getElementById('time').value,
@@ -200,3 +203,65 @@ function updateRecipe(id){
     .then(resp => resp.json())
     .then(getRecipes)
 }
+
+// function removeIngredient(id) {
+//     clearForm()
+//     let recipeID = event.target.dataset.id 
+//     fetch(BASE_URL+`/recipes/${recipeID}/ingredients/${id}`, {
+//         method: 'DELETE',
+//         headers: {
+//             'Content-Type':'application/json',
+//             'Accept':'application/json'
+//         }
+//     })
+//     .then(displayAfterEdit(recipeID))
+// }
+
+// function displayAfterEdit(recipeID){
+//     clearForm()
+//     let main = document.querySelector('#main ul')
+//     main.innerHTML = ''
+//     fetch(BASE_URL+'/recipes/'+recipeID)
+//     .then(resp => resp.json())
+//     .then(recipe => {
+//         let ingredients= recipe.ingredients.map(ingredient => {
+//             return `<li>${ingredient.description}
+//             <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
+//             </li>`
+//             }).join('')
+//         main.innerHTML += `
+//             <h2>${recipe.description}</h2> 
+//             <h3>Cook Time: ${recipe.time}</h3>
+//             <p>
+//                 <strong>Ingredients:</strong>
+//                 <br>
+//                 <ul>
+//                     ${ingredients}
+//                 </ul>
+//                 <br>
+            
+//                 <button data-id='${recipe.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
+//                 <br>
+//                 <br>
+//                 <div id='ingredient-form'></div>
+//                 <br>
+//                 <br>
+//                 <br>
+
+//                 <strong>Directions:</strong>
+//                 </br>
+//                 ${recipe.directions}
+
+//                 <br>
+//                 <br>
+//                 <br>
+                
+//                 <button data-id='${recipe.id}' onClick='editRecipe(${recipe.id})'; return False;>Edit Recipe</button>
+//                 <br>
+//                 <button data-id='${recipe.id}' onClick='removeRecipe(${recipe.id})'; return False;>Delete Recipe</button>
+//             </p>
+//         `
+//     })
+// }
+
+{/* <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button> */}

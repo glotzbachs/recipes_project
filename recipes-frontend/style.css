@@ -29,3 +29,9 @@ a:link {
   a:active {
     text-decoration: underline;
   }
+
+#directions {
+  resize: none;
+  width: 250px;
+  height: 250px;
+}

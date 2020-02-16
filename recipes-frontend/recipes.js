@@ -39,7 +39,7 @@ function displayCreateForm(){
         <label>Cook Time</label>
         <input type='text' id='time'></input></br>
         <label>Directions</label>
-        <input type='textarea' id='directions'></input></br>
+        <input type='text' id='directions'></input></br>
         <input type='submit' value='Create Recipe'></input>
         </form>
     `
@@ -183,7 +183,7 @@ function editRecipe(id){
             <label>Cook Time</label>
             <input type='text' id='time' value='${recipe.time}'></input></br>
             <label>Directions</label>
-            <input type='textarea' id='directions' value='${recipe.directions}'></input></br>
+            <input type='text' id='directions' value='${recipe.directions}'></input></br>
             <input type='submit' value='Update Recipe'></input>
             </form>
         `

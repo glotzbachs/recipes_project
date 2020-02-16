@@ -66,6 +66,7 @@ function createRecipe(){
         document.querySelector('#main ul').innerHTML += newRecipe.renderRecipeItem
         attachClickToRecipes() 
         clearForm()
+        getRecipes()
     })
 }
  
@@ -277,9 +278,7 @@ class RecipeItem{
     }
 
     renderRecipeItem(){
-        return `
-        <a href='#' data-id='${this.id}'>${this.description}</a> - ${this.time}</br>
-        `
+        return `<a href='#' data-id=${this.id}>${this.description}</a> - ${this.time}</br>`
     }
 
 }

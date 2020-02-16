@@ -39,7 +39,7 @@ function displayCreateForm(){
         <label>Cook Time</label>
         <input type='text' id='time'></input></br>
         <label>Directions</label>
-        <input type='text' id='directions'></input></br>
+        <input type='textarea' id='directions'></input></br>
         <input type='submit' value='Create Recipe'></input>
         </form>
     `
@@ -62,7 +62,8 @@ function createRecipe(){
     })
     .then(resp => resp.json())
     .then(recipe => {
-        document.querySelector('#main ul').innerHTML += recipe.renderRecipeItem
+        let newRecipe = new RecipeItem(recipe)
+        document.querySelector('#main ul').innerHTML += newRecipe.renderRecipeItem
         attachClickToRecipes() 
         clearForm()
     })
@@ -150,8 +151,10 @@ function addIngredient(id){
         <button onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
         </li>
         `
-    })
-    clearForm()
+        clearForm()
+        displayAfterEdit(id)
+    })  
+    
 }
 
 function removeRecipe(id) {
@@ -179,7 +182,7 @@ function editRecipe(id){
             <label>Cook Time</label>
             <input type='text' id='time' value='${recipe.time}'></input></br>
             <label>Directions</label>
-            <input type='text' id='directions' value='${recipe.directions}'></input></br>
+            <input type='textarea' id='directions' value='${recipe.directions}'></input></br>
             <input type='submit' value='Update Recipe'></input>
             </form>
         `
@@ -245,8 +248,6 @@ function displayAfterEdit(id){
                 <br>
                 <br>
                 <div id='ingredient-form'></div>
-                <br>
-                <br>
                 <br>
 
                 <strong>Directions:</strong>

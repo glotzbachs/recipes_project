@@ -12,7 +12,10 @@ function getRecipes(){
     fetch(BASE_URL+'/recipes')
     .then(resp => resp.json())
     .then(recipes => {
-        main.innerHTML += recipes.map(recipe => `<a href='#' data-id='${recipe.id}'>${recipe.description}</a> - ${recipe.time}</br>`).join('')
+        main.innerHTML += recipes.map(recipe => {
+            let newRecipe = new RecipeItem(recipe)
+            return newRecipe.renderRecipeItem()
+        }).join('')
         attachClickToRecipes()
     })  
 }
@@ -59,9 +62,7 @@ function createRecipe(){
     })
     .then(resp => resp.json())
     .then(recipe => {
-        document.querySelector('#main ul').innerHTML += `
-        <a href='#' data-id='${recipe.id}'>${recipe.description}</a> - ${recipe.time}</br>
-        `
+        document.querySelector('#main ul').innerHTML += recipe.renderRecipeItem
         attachClickToRecipes() 
         clearForm()
     })
@@ -79,6 +80,7 @@ function displayRecipe(e){
         let ingredients= recipe.ingredients.map(ingredient => {
             return `<li>
             ${ingredient.description}
+            <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return false;>X</button>
             </li>`
             }).join('')
         main.innerHTML += `
@@ -97,7 +99,7 @@ function displayRecipe(e){
                 <br>
                 <div id='ingredient-form'></div>
                 <br>
-                
+
                 <strong>Directions:</strong>
                 </br>
                 ${recipe.directions}
@@ -186,7 +188,6 @@ function editRecipe(id){
 }
 
 function updateRecipe(id){
-    clearForm()
     const recipe = {
         description: document.getElementById('description').value,
         time: document.getElementById('time').value,
@@ -201,67 +202,83 @@ function updateRecipe(id){
         body: JSON.stringify(recipe),
     })
     .then(resp => resp.json())
-    .then(getRecipes)
+    .then(displayAfterEdit(id))
 }
 
-// function removeIngredient(id) {
-//     clearForm()
-//     let recipeID = event.target.dataset.id 
-//     fetch(BASE_URL+`/recipes/${recipeID}/ingredients/${id}`, {
-//         method: 'DELETE',
-//         headers: {
-//             'Content-Type':'application/json',
-//             'Accept':'application/json'
-//         }
-//     })
-//     .then(displayAfterEdit(recipeID))
-// }
+function removeIngredient(id) {
+    clearForm()
+    let recipeID = event.target.dataset.id 
+    fetch(BASE_URL+`/recipes/${recipeID}/ingredients/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type':'application/json',
+            'Accept':'application/json'
+        }
+    })
+    .then(displayAfterEdit(recipeID))
+}
 
-// function displayAfterEdit(recipeID){
-//     clearForm()
-//     let main = document.querySelector('#main ul')
-//     main.innerHTML = ''
-//     fetch(BASE_URL+'/recipes/'+recipeID)
-//     .then(resp => resp.json())
-//     .then(recipe => {
-//         let ingredients= recipe.ingredients.map(ingredient => {
-//             return `<li>${ingredient.description}
-//             <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
-//             </li>`
-//             }).join('')
-//         main.innerHTML += `
-//             <h2>${recipe.description}</h2> 
-//             <h3>Cook Time: ${recipe.time}</h3>
-//             <p>
-//                 <strong>Ingredients:</strong>
-//                 <br>
-//                 <ul>
-//                     ${ingredients}
-//                 </ul>
-//                 <br>
+function displayAfterEdit(id){
+    clearForm()
+    let main = document.querySelector('#main ul')
+    main.innerHTML = ''
+    fetch(BASE_URL+'/recipes/'+id)
+    .then(resp => resp.json())
+    .then(recipe => {
+        let ingredients= recipe.ingredients.map(ingredient => {
+            return `<li>${ingredient.description}
+            <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
+            </li>`
+            }).join('')
+        main.innerHTML += `
+            <h2>${recipe.description}</h2> 
+            <h3>Cook Time: ${recipe.time}</h3>
+            <p>
+                <strong>Ingredients:</strong>
+                <br>
+                <ul>
+                    ${ingredients}
+                </ul>
+                <br>
             
-//                 <button data-id='${recipe.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
-//                 <br>
-//                 <br>
-//                 <div id='ingredient-form'></div>
-//                 <br>
-//                 <br>
-//                 <br>
+                <button data-id='${recipe.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
+                <br>
+                <br>
+                <div id='ingredient-form'></div>
+                <br>
+                <br>
+                <br>
 
-//                 <strong>Directions:</strong>
-//                 </br>
-//                 ${recipe.directions}
+                <strong>Directions:</strong>
+                </br>
+                ${recipe.directions}
 
-//                 <br>
-//                 <br>
-//                 <br>
+                <br>
+                <br>
+                <br>
                 
-//                 <button data-id='${recipe.id}' onClick='editRecipe(${recipe.id})'; return False;>Edit Recipe</button>
-//                 <br>
-//                 <button data-id='${recipe.id}' onClick='removeRecipe(${recipe.id})'; return False;>Delete Recipe</button>
-//             </p>
-//         `
-//     })
-// }
+                <button data-id='${recipe.id}' onClick='editRecipe(${recipe.id})'; return False;>Edit Recipe</button>
+                <br>
+                <button data-id='${recipe.id}' onClick='removeRecipe(${recipe.id})'; return False;>Delete Recipe</button>
+            </p>
+        `
+    })
+}
 
-{/* <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button> */}
+
+
+class RecipeItem{
+    constructor(recipe){
+        this.id = recipe.id 
+        this.description = recipe.description
+        this.time = recipe.time
+        this.directions = recipe.directions
+    }
+
+    renderRecipeItem(){
+        return `
+        <a href='#' data-id='${this.id}'>${this.description}</a> - ${this.time}</br>
+        `
+    }
+
+}

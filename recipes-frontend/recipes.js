@@ -82,7 +82,7 @@ function displayRecipe(e){
         let ingredients= recipe.ingredients.map(ingredient => {
             return `<li>
             ${ingredient.description}
-            <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return false;>X</button>
+            <button data-id='${ingredient.id}' onClick='removeIngredient(${ingredient.id})'; return false;>X</button>
             </li>`
             }).join('')
         main.innerHTML += `
@@ -159,7 +159,8 @@ function addIngredient(id){
 }
 
 function removeRecipe(id) {
-    clearForm()
+    let ingredients = document.querySelectorAll('li button')
+    ingredients.forEach(ingredient => removeIngredient(ingredient.dataset.id))
     fetch(BASE_URL+`/recipes/${id}`, {
         method: 'DELETE',
         headers: {
@@ -231,7 +232,7 @@ function displayAfterEdit(id){
     .then(recipe => {
         let ingredients= recipe.ingredients.map(ingredient => {
             return `<li>${ingredient.description}
-            <button data-id='${recipe.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
+            <button data-id='${ingredient.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
             </li>`
             }).join('')
         main.innerHTML += `

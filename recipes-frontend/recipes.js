@@ -6,13 +6,14 @@ window.addEventListener('load', () => {
 })
 
 function getRecipes(){
-    clearForm()
-    let main = document.querySelector('#main ul')
-    main.innerHTML = ''
+    let main = document.querySelector('#container')
+    main.innerHTML=''
+    let ul= document.createElement('ul')
+    main.appendChild(ul)
     fetch(BASE_URL+'/recipes')
     .then(resp => resp.json())
     .then(recipes => {
-        main.innerHTML += recipes.map(recipe => {
+        ul.innerHTML += recipes.map(recipe => {
             let newRecipe = new RecipeItem(recipe)
             return newRecipe.renderRecipeItem()
         }).join('')
@@ -21,8 +22,8 @@ function getRecipes(){
 }
 
 function clearForm(){
-    let recipeFormDiv = document.getElementById('recipe-form')
-    recipeFormDiv.innerHTML = ''
+    let formDiv = document.querySelector('form')
+    formDiv.remove()
 }
 
 function attachClickToRecipes(){
@@ -47,10 +48,11 @@ function displayCreateForm(){
 }
 
 function createRecipe(){
+    event.preventDefault()
     const recipe = {
-        description: document.getElementById('description').value,
-        time: document.getElementById('time').value,
-        directions: document.getElementById('directions').value
+        description: event.target.description.value,
+        time: event.target.time.value,
+        directions: event.target.directions.value
     }
     fetch(BASE_URL+'/recipes',{
         method:'POST',
@@ -63,58 +65,22 @@ function createRecipe(){
     .then(resp => resp.json())
     .then(recipe => {
         let newRecipe = new RecipeItem(recipe)
-        document.querySelector('#main ul').innerHTML += newRecipe.renderRecipeItem
+        document.querySelector('#container ul').innerHTML += newRecipe.renderRecipeItem()
         attachClickToRecipes() 
         clearForm()
-        getRecipes()
     })
 }
  
-function displayRecipe(e){
-    e.preventDefault()
-    let id = e.target.dataset.id
-    clearForm()
-    let main = document.querySelector('#main ul')
+function displayRecipe(){
+    event.preventDefault()
+    let id = event.target.dataset.id
+    let main = document.querySelector('#container')
     main.innerHTML = ''
     fetch(BASE_URL+'/recipes/'+id)
     .then(resp => resp.json())
     .then(recipe => {
-        let ingredients= recipe.ingredients.map(ingredient => {
-            return `<li>
-            ${ingredient.description}
-            <button data-id='${recipe.id}' data-ref='${ingredient.id}' onClick='removeIngredient(${ingredient.id})'; return false;>X</button>
-            </li>`
-            }).join('')
-        main.innerHTML += `
-            <h2>${recipe.description}</h2> 
-            <h3>Cook Time: ${recipe.time}</h3>
-            <p>
-                <strong>Ingredients:</strong>
-                <br>
-                <ul>
-                    ${ingredients}
-                </ul>
-                <br>
-            
-                <button data-id='${recipe.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
-                <br>
-                <br>
-                <div id='ingredient-form'></div>
-                <br>
-
-                <strong>Directions:</strong>
-                </br>
-                ${recipe.directions}
-
-                <br>
-                <br>
-                <br>
-                
-                <button data-id='${recipe.id}' onClick='editRecipe(${recipe.id})'; return False;>Edit Recipe</button>
-                <br>
-                <button data-id='${recipe.id}' onClick='removeRecipe(${recipe.id})'; return False;>Delete Recipe</button>
-            </p>
-        `
+        let newRecipe = new RecipeItem(recipe)
+        newRecipe.displaySingleRecipe()
     })
 }
 
@@ -133,6 +99,7 @@ function displayIngredientForm(){
 }
 
 function addIngredient(id){
+    event.preventDefault()
     const ingredient = {
         description: document.getElementById('name').value,
         }
@@ -146,21 +113,17 @@ function addIngredient(id){
     })
     .then(resp => resp.json())
     .then(ingredient => {
-        document.querySelector('#main ul ul').innerHTML += `
-        <li>
+        document.querySelector('#container ul').innerHTML += `
+        <li id='${ingredient.id}'>
         ${ingredient.description}
-        <button onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
+        <button data-id='${id}' data-ref='${ingredient.id}' onClick='removeIngredient()'; return false;>X</button>
         </li>
         `
         clearForm()
-        displayAfterEdit(id)
-    })  
-    
+    })      
 }
 
 function removeRecipe(id) {
-    let ingredients = document.querySelectorAll('li button')
-    ingredients.forEach(ingredient => removeIngredient(ingredient.dataset.ref))
     fetch(BASE_URL+`/recipes/${id}`, {
         method: 'DELETE',
         headers: {
@@ -172,13 +135,13 @@ function removeRecipe(id) {
 }
 
 function editRecipe(id){
-    clearForm()
     fetch(BASE_URL+`/recipes/${id}`)
     .then(resp => resp.json())
     .then(recipe => {
         let recipeFormDiv = document.getElementById('recipe-form')
         let html = `
-            <form onsubmit='updateRecipe(${id});return false;'>
+            <form data-id='${id}'>
+            <input type='hidden' id='recipeId' value=${id} ></input>
             <label>Description</label>
             <input type='text' id='description' value='${recipe.description}'></input></br>
             <label>Cook Time</label>
@@ -189,14 +152,17 @@ function editRecipe(id){
             </form>
         `
         recipeFormDiv.innerHTML = html
+        document.querySelector('form').addEventListener('submit', updateRecipe)
     })
 }
 
-function updateRecipe(id){
+function updateRecipe(){
+    event.preventDefault()
+    let id = event.target.recipeId.value
     const recipe = {
-        description: document.getElementById('description').value,
-        time: document.getElementById('time').value,
-        directions: document.getElementById('directions').value
+        description: event.target.description.value,
+        time: event.target.time.value,
+        directions: event.target.directions.value
     }
     fetch(BASE_URL+`/recipes/${id}`, {
         method: 'PATCH',
@@ -207,12 +173,17 @@ function updateRecipe(id){
         body: JSON.stringify(recipe),
     })
     .then(resp => resp.json())
-    .then(displayAfterEdit(id))
+    .then(recipe => {
+        let newRecipe = new RecipeItem(recipe)
+        newRecipe.displaySingleRecipe()
+        clearForm()
+    })
 }
 
-function removeIngredient(id) {
-    clearForm()
+function removeIngredient() {
+    event.preventDefault()
     let recipeID = event.target.dataset.id 
+    let id = event.target.dataset.ref 
     fetch(BASE_URL+`/recipes/${recipeID}/ingredients/${id}`, {
         method: 'DELETE',
         headers: {
@@ -220,54 +191,11 @@ function removeIngredient(id) {
             'Accept':'application/json'
         }
     })
-    .then(displayAfterEdit(recipeID))
+    .then(() => {
+        document.getElementById(id).remove()
+    }) 
 }
 
-function displayAfterEdit(id){
-    clearForm()
-    let main = document.querySelector('#main ul')
-    main.innerHTML = ''
-    fetch(BASE_URL+'/recipes/'+id)
-    .then(resp => resp.json())
-    .then(recipe => {
-        let ingredients= recipe.ingredients.map(ingredient => {
-            return `<li>
-            ${ingredient.description}
-            <button data-id='${recipe.id}' data-ref='${ingredient.id}' onClick='removeIngredient(${ingredient.id})'; return False;>X</button>
-            </li>`
-            }).join('')
-        main.innerHTML += `
-            <h2>${recipe.description}</h2> 
-            <h3>Cook Time: ${recipe.time}</h3>
-            <p>
-                <strong>Ingredients:</strong>
-                <br>
-                <ul>
-                    ${ingredients}
-                </ul>
-                <br>
-            
-                <button data-id='${recipe.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
-                <br>
-                <br>
-                <div id='ingredient-form'></div>
-                <br>
-
-                <strong>Directions:</strong>
-                </br>
-                ${recipe.directions}
-
-                <br>
-                <br>
-                <br>
-                
-                <button data-id='${recipe.id}' onClick='editRecipe(${recipe.id})'; return False;>Edit Recipe</button>
-                <br>
-                <button data-id='${recipe.id}' onClick='removeRecipe(${recipe.id})'; return False;>Delete Recipe</button>
-            </p>
-        `
-    })
-}
 
 
 
@@ -277,10 +205,51 @@ class RecipeItem{
         this.description = recipe.description
         this.time = recipe.time
         this.directions = recipe.directions
+        this.ingredients = recipe.ingredients
     }
 
     renderRecipeItem(){
         return `<a href='#' data-id=${this.id}>${this.description}</a> - ${this.time}</br>`
+    }
+
+    displaySingleRecipe() {
+        let main = document.querySelector('#container')
+        let ingredients= this.ingredients.map(ingredient => {
+            return `<li id='${ingredient.id}'>
+            ${ingredient.description}
+            <button data-id='${this.id}' data-ref='${ingredient.id}' onClick='removeIngredient()'; return false;>X</button>
+            </li>`
+            }).join('')
+        main.innerHTML = `
+            <h2>${this.description}</h2> 
+            <h3>Cook Time: ${this.time}</h3>
+            <p>
+                <strong>Ingredients:</strong>
+                <br>
+                <ul>
+                    ${ingredients}
+                </ul>
+                <br>
+            
+                <button data-id='${this.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
+                <br>
+                <br>
+                <div id='ingredient-form'></div>
+                <br>
+    
+                <strong>Directions:</strong>
+                </br>
+                ${this.directions}
+    
+                <br>
+                <br>
+                <br>
+                
+                <button data-id='${this.id}' onClick='editRecipe(${this.id})'; return False;>Edit Recipe</button>
+                <br>
+                <button data-id='${this.id}' onClick='removeRecipe(${this.id})'; return False;>Delete Recipe</button>
+            </p>
+        `
     }
 
 }

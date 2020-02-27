@@ -197,6 +197,38 @@ function removeIngredient() {
 }
 
 
+function displayOrderedIngredients(ingredients) {  
+    event.preventDefault()
+    debugger
+    console.log(event.target.dataset.id)
+    let recipeID=event.target.dataset.id
+    fetch(BASE_URL+`/recipes/${recipeID}/ingredients`)
+    .then(resp => resp.json())
+    .then(ingredients => {
+        let orderedIngredients = ingredients.sort((a, b) => {
+            var ingA = a.description.toUpperCase(); // ignore upper and lowercase
+            var ingB = b.description.toUpperCase(); // ignore upper and lowercase
+            if (ingA < ingB) {
+                return -1;
+            }
+            if (ingA > ingB) {
+                return 1;
+            }
+
+            // names must be equal
+            return 0;
+        })
+
+        let ul = document.querySelector('ul')
+        ul.innerHTML = ''
+        ul.innerHTML += orderedIngredients.map(ingredient => {
+            return `<li id='${ingredient.id}'>
+            ${ingredient.description}
+            <button data-id='${this.id}' data-ref='${ingredient.id}' onClick='removeIngredient()'; return false;>X</button>
+            </li>`
+            }).join('')
+    })    
+}
 
 
 class RecipeItem{
@@ -231,12 +263,14 @@ class RecipeItem{
                 </ul>
                 <br>
             
-                <button data-id='${this.id}' onClick='displayIngredientForm()'; return False;>New Ingredient</button>
+                <button data-id='${this.id}' onclick='displayIngredientForm()'; return false;>New Ingredient</button>
                 <br>
                 <br>
                 <div id='ingredient-form'></div>
                 <br>
-    
+                <button data-id='${this.id}' onclick='displayOrderedIngredients.apply(${this})'; return false;>Order Ingredients</button>
+                <br>
+                <br>
                 <strong>Directions:</strong>
                 </br>
                 ${this.directions}
@@ -245,9 +279,9 @@ class RecipeItem{
                 <br>
                 <br>
                 
-                <button data-id='${this.id}' onClick='editRecipe(${this.id})'; return False;>Edit Recipe</button>
+                <button data-id='${this.id}' onclick='editRecipe(${this.id})'; return false;>Edit Recipe</button>
                 <br>
-                <button data-id='${this.id}' onClick='removeRecipe(${this.id})'; return False;>Delete Recipe</button>
+                <button data-id='${this.id}' onclick='removeRecipe(${this.id})'; return false;>Delete Recipe</button>
             </p>
         `
     }

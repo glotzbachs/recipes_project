@@ -197,25 +197,17 @@ function removeIngredient() {
 }
 
 
-function displayOrderedIngredients(ingredients) {  
+const displayOrderedIngredients = (recipe) => {  
     event.preventDefault()
-    debugger
-    console.log(event.target.dataset.id)
-    let recipeID=event.target.dataset.id
-    fetch(BASE_URL+`/recipes/${recipeID}/ingredients`)
-    .then(resp => resp.json())
-    .then(ingredients => {
-        let orderedIngredients = ingredients.sort((a, b) => {
-            var ingA = a.description.toUpperCase(); // ignore upper and lowercase
-            var ingB = b.description.toUpperCase(); // ignore upper and lowercase
+    let orderedIngredients = recipe.ingredients.sort((a, b) => {
+            var ingA = a.description.toUpperCase(); 
+            var ingB = b.description.toUpperCase(); 
             if (ingA < ingB) {
                 return -1;
             }
             if (ingA > ingB) {
                 return 1;
             }
-
-            // names must be equal
             return 0;
         })
 
@@ -226,8 +218,7 @@ function displayOrderedIngredients(ingredients) {
             ${ingredient.description}
             <button data-id='${this.id}' data-ref='${ingredient.id}' onClick='removeIngredient()'; return false;>X</button>
             </li>`
-            }).join('')
-    })    
+            }).join('')  
 }
 
 
@@ -268,7 +259,7 @@ class RecipeItem{
                 <br>
                 <div id='ingredient-form'></div>
                 <br>
-                <button data-id='${this.id}' onclick='displayOrderedIngredients.apply(${this})'; return false;>Order Ingredients</button>
+                <button data-id='${this.id}' onclick='displayOrderedIngredients(${JSON.stringify(this)})'; return false;>Order Ingredients</button>
                 <br>
                 <br>
                 <strong>Directions:</strong>
